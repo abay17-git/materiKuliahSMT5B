@@ -39,4 +39,5 @@ Mahasiswa mampu:
     - Nama Lengkap
     - NIM
     - Asal Sekolah
-    - 
+    - Cita cita
+    ![alt text](<WhatsApp Image 2026-09-21 at 10.38.20.jpeg>)

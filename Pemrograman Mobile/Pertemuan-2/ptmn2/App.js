@@ -1,22 +1,25 @@
 import React, { useEffect, useRef, useState } from "react";
 
 import {
-  ActivityIndicator,
-  Alert,
-  Animated,
-  FlatList,
+  View,
+  Text,
   Image,
-  Modal,
-  Platform,
-  Pressable,
+  ScrollView,
+  FlatList,
   SectionList,
-  Share,
+  TextInput,
+  Button,
+  TouchableOpacity,
+  Pressable,
+  Switch,
+  Modal,
+  ActivityIndicator,
   StatusBar,
   StyleSheet,
-  Switch,
-  Text,
-  TouchableOpacity,
-  View,
+  Animated,
+  KeyboardAvoidingView,
+  Platform,
+  Share,
 } from "react-native";
 
 import {
@@ -35,13 +38,13 @@ import {
   Poppins_700Bold,
 } from "@expo-google-fonts/poppins";
 
-/* =========================================================
-   DATA CV
-========================================================= */
+
+// ======================================================
+// DATA PROFILE
+// ======================================================
 
 const PROFILE = {
   name: "Irfan Mubarok",
-  nim: "2488010075",
   title: "Web Developer",
   email: "irfanmubarok@mail.uinssc.ac.id",
   phone: "0838-0433-9441",
@@ -52,8 +55,11 @@ const PROFILE = {
   avatar:
     "https://avatars.githubusercontent.com/u/273804599?v=4&size=64",
 
-  // Foto yang digunakan ketika offline
-  avatarOffline: require("./assets/icon.png"),
+  avatarOffline: require("./assets/profilabay.png"),
+
+  nim: "2488010075",
+
+  school: "UIN Siber Syekh Nurjati Cirebon",
 
   aspiration: "Website Development",
 
@@ -61,51 +67,52 @@ const PROFILE = {
     "Saya akan terus belajar dan mengembangkan kemampuan di bidang website development dengan mempelajari HTML, CSS, JavaScript, serta teknologi web lainnya. Saya juga akan memperbanyak latihan dan membuat berbagai proyek website untuk meningkatkan pengalaman dan kemampuan saya.",
 };
 
-/* =========================================================
-   SKILLS
-========================================================= */
+
+// ======================================================
+// DATA SKILLS
+// ======================================================
 
 const SKILLS = [
   {
     id: "1",
     name: "HTML",
-    level: 85,
+    percentage: 90,
   },
   {
     id: "2",
     name: "CSS",
-    level: 80,
+    percentage: 85,
   },
   {
     id: "3",
     name: "JavaScript",
-    level: 75,
+    percentage: 80,
   },
   {
     id: "4",
     name: "PHP",
-    level: 70,
+    percentage: 75,
   },
   {
     id: "5",
     name: "Figma",
-    level: 75,
+    percentage: 70,
   },
 ];
 
-/* =========================================================
-   PENDIDIKAN & ORGANISASI
-========================================================= */
+
+// ======================================================
+// DATA PENDIDIKAN DAN ORGANISASI
+// ======================================================
 
 const HISTORY = [
   {
     title: "Pendidikan",
     data: [
       {
-        id: "edu1",
         type: "education",
-        name: "UIN Siber Syekh Nurjati Cirebon",
-        position: "Informatika",
+        title: "UIN Siber Syekh Nurjati Cirebon",
+        subtitle: "Informatika",
         year: "2024 - Sekarang",
         description:
           "Sedang menempuh pendidikan S1 Informatika di UIN Siber Syekh Nurjati Cirebon",
@@ -114,78 +121,51 @@ const HISTORY = [
   },
 
   {
-    title: "Pengalaman Organisasi",
+    title: "Organisasi",
     data: [
       {
-        id: "org1",
         type: "organization",
-        name: "Himpunan Mahasiswa Informatika",
-        position:
-          "Kepala Department of Information and Communcations",
+        title: "Himpunan Mahasiswa Informatika",
+        subtitle: "Kepala Department of Information and Communcations",
         year: "2026/2027",
         description:
-          "Bertanggung jawab dalam mengelola komunikasi dan penyampaian informasi organisasi serta membantu mengembangkan media informasi Himpunan Mahasiswa Informatika.",
+          "Berperan dalam mengelola informasi dan komunikasi organisasi serta membantu menyampaikan informasi kegiatan kepada mahasiswa.",
       },
     ],
   },
 ];
 
-/* =========================================================
-   KOMPONEN SKILL CARD
-========================================================= */
 
-function SkillCard({ item, index }) {
-  const widthAnimation = useRef(
-    new Animated.Value(0)
-  ).current;
+// ======================================================
+// KOMPONEN SKILL CARD
+// ======================================================
 
-  const fadeAnimation = useRef(
-    new Animated.Value(0)
-  ).current;
+function SkillCard({ item }) {
+  const progress = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    Animated.parallel([
-      Animated.timing(fadeAnimation, {
-        toValue: 1,
-        duration: 500,
-        delay: index * 120,
-        useNativeDriver: true,
-      }),
-
-      Animated.timing(widthAnimation, {
-        toValue: item.level,
-        duration: 900,
-        delay: index * 120,
-        useNativeDriver: false,
-      }),
-    ]).start();
+    Animated.timing(progress, {
+      toValue: item.percentage,
+      duration: 1000,
+      useNativeDriver: false,
+    }).start();
   }, []);
 
-  return (
-    <Animated.View
-      style={[
-        styles.skillCard,
-        {
-          opacity: fadeAnimation,
+  const width = progress.interpolate({
+    inputRange: [0, 100],
+    outputRange: ["0%", "100%"],
+  });
 
-          transform: [
-            {
-              translateY: fadeAnimation.interpolate({
-                inputRange: [0, 1],
-                outputRange: [20, 0],
-              }),
-            },
-          ],
-        },
-      ]}
-    >
+  return (
+    <View style={styles.skillCard}>
+
       <View style={styles.skillTop}>
         <Text style={styles.skillName}>
           {item.name}
         </Text>
 
-        <Text style={styles.skillPercentage}>
-          {item.level}%
+        <Text style={styles.skillPercent}>
+          {item.percentage}%
         </Text>
       </View>
 
@@ -194,53 +174,66 @@ function SkillCard({ item, index }) {
           style={[
             styles.progressBar,
             {
-              width: widthAnimation.interpolate({
-                inputRange: [0, 100],
-                outputRange: ["0%", "100%"],
-              }),
+              width: width,
             },
           ]}
         />
       </View>
-    </Animated.View>
+
+    </View>
   );
 }
 
-/* =========================================================
-   KOMPONEN TIMELINE CARD
-========================================================= */
+
+// ======================================================
+// KOMPONEN TIMELINE CARD
+// ======================================================
 
 function TimelineCard({ item }) {
   return (
     <View style={styles.timelineCard}>
-      <View style={styles.timelineDot} />
+
+      <View style={styles.timelineCircle}>
+        <Text style={styles.timelineCircleText}>
+          {item.type === "education" ? "🎓" : "👥"}
+        </Text>
+      </View>
 
       <View style={styles.timelineContent}>
+
         <Text style={styles.timelineYear}>
           {item.year}
         </Text>
 
-        <Text style={styles.timelineName}>
-          {item.name}
+        <Text style={styles.timelineTitle}>
+          {item.title}
         </Text>
 
-        <Text style={styles.timelinePosition}>
-          {item.position}
+        <Text style={styles.timelineSubtitle}>
+          {item.subtitle}
         </Text>
 
         <Text style={styles.timelineDescription}>
           {item.description}
         </Text>
+
       </View>
+
     </View>
   );
 }
 
-/* =========================================================
-   APP
-========================================================= */
+
+// ======================================================
+// APP
+// ======================================================
 
 export default function App() {
+
+  // ====================================================
+  // FONT
+  // ====================================================
+
   const [fontsLoaded] = useFonts({
     Poppins_400Regular,
     Poppins_500Medium,
@@ -248,20 +241,27 @@ export default function App() {
     Poppins_700Bold,
   });
 
+
+  // ====================================================
+  // STATE
+  // ====================================================
+
   const [isOnline, setIsOnline] = useState(true);
 
-  const [showContact, setShowContact] =
-    useState(true);
+  const [loading, setLoading] = useState(true);
 
-  const [modalVisible, setModalVisible] =
-    useState(false);
+  const [showContact, setShowContact] = useState(true);
 
-  const [showIntro, setShowIntro] =
-    useState(true);
+  const [darkMode, setDarkMode] = useState(false);
 
-  /* =====================================================
-     ANIMASI INTRO
-  ===================================================== */
+  const [modalVisible, setModalVisible] = useState(false);
+
+  const [message, setMessage] = useState("");
+
+
+  // ====================================================
+  // ANIMATION INTRO
+  // ====================================================
 
   const introOpacity = useRef(
     new Animated.Value(1)
@@ -271,682 +271,826 @@ export default function App() {
     new Animated.Value(1)
   ).current;
 
-  /* =====================================================
-     ANIMASI HEADER
-  ===================================================== */
 
-  const headerOpacity = useRef(
+  // ====================================================
+  // ANIMATION AVATAR
+  // ====================================================
+
+  const avatarOpacity = useRef(
     new Animated.Value(0)
   ).current;
 
-  const headerScale = useRef(
-    new Animated.Value(0.85)
+  const avatarScale = useRef(
+    new Animated.Value(0.7)
   ).current;
 
-  /* =====================================================
-     INTRO
-  ===================================================== */
+
+  // ====================================================
+  // CEK INTERNET
+  // ====================================================
 
   useEffect(() => {
+
+    NetInfo.fetch().then((state) => {
+      setIsOnline(state.isConnected);
+    });
+
+    const unsubscribe = NetInfo.addEventListener((state) => {
+      setIsOnline(state.isConnected);
+    });
+
+    return () => unsubscribe();
+
+  }, []);
+
+
+  // ====================================================
+  // INTRO LOADING
+  // ====================================================
+
+  useEffect(() => {
+
     const timer = setTimeout(() => {
+
       Animated.parallel([
+
         Animated.timing(introOpacity, {
           toValue: 0,
-          duration: 600,
+          duration: 500,
           useNativeDriver: true,
         }),
 
         Animated.timing(introScale, {
-          toValue: 1.1,
-          duration: 600,
+          toValue: 1.2,
+          duration: 500,
           useNativeDriver: true,
         }),
+
       ]).start(() => {
-        setShowIntro(false);
-
-        Animated.parallel([
-          Animated.timing(headerOpacity, {
-            toValue: 1,
-            duration: 700,
-            useNativeDriver: true,
-          }),
-
-          Animated.spring(headerScale, {
-            toValue: 1,
-            friction: 6,
-            useNativeDriver: true,
-          }),
-        ]).start();
+        setLoading(false);
       });
-    }, 1800);
+
+    }, 2000);
 
     return () => clearTimeout(timer);
+
   }, []);
 
-  /* =====================================================
-     CEK INTERNET
-  ===================================================== */
+
+  // ====================================================
+  // ANIMASI AVATAR
+  // ====================================================
 
   useEffect(() => {
-    const unsubscribe =
-      NetInfo.addEventListener((state) => {
-        setIsOnline(
-          Boolean(state.isConnected)
-        );
-      });
 
-    return unsubscribe;
-  }, []);
+    if (!loading) {
 
-  /* =====================================================
-     LOADING FONT
-  ===================================================== */
+      Animated.parallel([
 
-  if (!fontsLoaded) {
-    return (
-      <View style={styles.loadingScreen}>
-        <ActivityIndicator
-          size="large"
-          color="#6366F1"
-        />
+        Animated.timing(avatarOpacity, {
+          toValue: 1,
+          duration: 700,
+          useNativeDriver: true,
+        }),
 
-        <Text style={styles.loadingText}>
-          Memuat CV...
-        </Text>
-      </View>
-    );
-  }
+        Animated.spring(avatarScale, {
+          toValue: 1,
+          friction: 5,
+          tension: 40,
+          useNativeDriver: true,
+        }),
 
-  /* =====================================================
-     SHARE CV
-  ===================================================== */
+      ]).start();
+
+    }
+
+  }, [loading]);
+
+
+  // ====================================================
+  // SHARE CV
+  // ====================================================
 
   const shareCV = async () => {
-    const text = `
-CV - ${PROFILE.name}
-
-Nama:
-${PROFILE.name}
-
-NIM:
-${PROFILE.nim}
-
-Profesi:
-${PROFILE.title}
-
-Pendidikan:
-UIN Siber Syekh Nurjati Cirebon
-Informatika
-2024 - Sekarang
-
-Cita-cita:
-${PROFILE.aspiration}
-
-Skills:
-HTML, CSS, JavaScript, PHP, Figma
-
-Email:
-${PROFILE.email}
-
-Telepon:
-${PROFILE.phone}
-
-Lokasi:
-${PROFILE.location}
-`;
 
     try {
-      if (Platform.OS === "web") {
-        if (navigator.share) {
-          await navigator.share({
-            title: `CV ${PROFILE.name}`,
-            text: text,
-          });
-        } else {
-          Alert.alert(
-            "Share CV",
-            "Fitur share tidak tersedia pada browser ini."
-          );
-        }
-
-        return;
-      }
 
       await Share.share({
-        message: text,
+
+        message:
+          `CV Irfan Mubarok\n\n` +
+          `Nama: ${PROFILE.name}\n` +
+          `NIM: ${PROFILE.nim}\n` +
+          `Profesi: ${PROFILE.title}\n` +
+          `Email: ${PROFILE.email}\n` +
+          `Telepon: ${PROFILE.phone}\n` +
+          `Lokasi: ${PROFILE.location}\n\n` +
+          `Pendidikan:\n` +
+          `${PROFILE.school}\n\n` +
+          `Cita-cita:\n` +
+          `${PROFILE.aspiration}\n\n` +
+          `Tentang Saya:\n` +
+          `${PROFILE.bio}`,
+
       });
+
     } catch (error) {
+
       console.log(error);
+
     }
   };
 
-  /* =====================================================
-     HEADER
-  ===================================================== */
+
+  // ====================================================
+  // KIRIM PESAN
+  // ====================================================
+
+  const sendMessage = () => {
+
+    if (message.trim() === "") {
+      alert("Silakan tulis pesan terlebih dahulu.");
+      return;
+    }
+
+    alert("Pesan berhasil disiapkan.");
+
+    setMessage("");
+
+  };
+
+
+  // ====================================================
+  // SECTION LIST DATA
+  // ====================================================
+
+  const sections = [
+
+    {
+      title: "Keahlian",
+      type: "skills",
+      data: ["skills"],
+    },
+
+    {
+      title: "Pendidikan",
+      type: "history",
+      data: HISTORY[0].data,
+    },
+
+    {
+      title: "Organisasi",
+      type: "history",
+      data: HISTORY[1].data,
+    },
+
+  ];
+
+
+  // ====================================================
+  // HEADER
+  // ====================================================
 
   const renderHeader = () => {
+
     return (
-      <>
-        {/* HEADER PROFILE */}
 
-        <Animated.View
-          style={[
-            styles.headerWrapper,
+      <View>
 
-            {
-              opacity: headerOpacity,
+        {/* ============================================
+            HEADER GRADIENT
+        ============================================ */}
 
+        <LinearGradient
+          colors={
+            darkMode
+              ? ["#111827", "#1e293b"]
+              : ["#2563EB", "#7C3AED"]
+          }
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.header}
+        >
+
+          {/* STATUS INTERNET */}
+
+          <View style={styles.statusContainer}>
+
+            <View
+              style={[
+                styles.statusDot,
+                {
+                  backgroundColor: isOnline
+                    ? "#22C55E"
+                    : "#EF4444",
+                },
+              ]}
+            />
+
+            <Text style={styles.statusText}>
+              {isOnline
+                ? "Online"
+                : "Offline"}
+            </Text>
+
+          </View>
+
+
+          {/* AVATAR */}
+
+          <Animated.View
+            style={{
+              opacity: avatarOpacity,
               transform: [
                 {
-                  scale: headerScale,
+                  scale: avatarScale,
                 },
               ],
-            },
-          ]}
-        >
-          <LinearGradient
-            colors={[
-              "#6366F1",
-              "#8B5CF6",
-              "#A855F7",
-            ]}
-            start={{
-              x: 0,
-              y: 0,
             }}
-            end={{
-              x: 1,
-              y: 1,
-            }}
-            style={styles.header}
           >
-            {/* STATUS */}
 
-            <View style={styles.statusBadge}>
-              <View
-                style={[
-                  styles.statusDot,
+            <View style={styles.avatarBorder}>
 
-                  {
-                    backgroundColor: isOnline
-                      ? "#22C55E"
-                      : "#EF4444",
-                  },
-                ]}
+              <Image
+                source={
+                  isOnline
+                    ? {
+                        uri: PROFILE.avatar,
+                      }
+                    : PROFILE.avatarOffline
+                }
+                style={styles.avatar}
               />
 
-              <Text style={styles.statusText}>
-                {isOnline
-                  ? "Online"
-                  : "Offline"}
+            </View>
+
+          </Animated.View>
+
+
+          {/* NAME */}
+
+          <Text style={styles.headerName}>
+            {PROFILE.name}
+          </Text>
+
+          <Text style={styles.headerTitle}>
+            {PROFILE.title}
+          </Text>
+
+
+          {/* LOCATION */}
+
+          <Text style={styles.headerLocation}>
+            📍 {PROFILE.location}
+          </Text>
+
+
+          {/* DETAIL BUTTON */}
+
+          <TouchableOpacity
+            style={styles.detailButton}
+            activeOpacity={0.7}
+            onPress={() => setModalVisible(true)}
+          >
+
+            <Text style={styles.detailButtonText}>
+              Lihat Detail Profil
+            </Text>
+
+          </TouchableOpacity>
+
+        </LinearGradient>
+
+
+        {/* ============================================
+            BIO CARD
+        ============================================ */}
+
+        <View style={styles.sectionContainer}>
+
+          <View style={styles.glassCard}>
+
+            <Text style={styles.sectionTitle}>
+              Tentang Saya
+            </Text>
+
+            <Text style={styles.bioText}>
+              {PROFILE.bio}
+            </Text>
+
+          </View>
+
+
+          {/* ========================================
+              QUICK INFORMATION
+          ======================================== */}
+
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.quickScroll}
+          >
+
+            <View style={styles.quickCard}>
+              <Text style={styles.quickIcon}>🎓</Text>
+
+              <Text style={styles.quickLabel}>
+                Pendidikan
+              </Text>
+
+              <Text style={styles.quickValue}>
+                Informatika
               </Text>
             </View>
 
-            {/* AVATAR */}
 
-            <TouchableOpacity
-              activeOpacity={0.8}
-              onPress={() =>
-                setModalVisible(true)
-              }
-            >
-              <Animated.View
-                style={styles.avatarWrapper}
-              >
-                <Image
-                  source={
-                    isOnline
-                      ? {
-                          uri: PROFILE.avatar,
-                        }
-                      : PROFILE.avatarOffline
-                  }
-                  style={styles.avatar}
-                />
+            <View style={styles.quickCard}>
+              <Text style={styles.quickIcon}>💻</Text>
 
-                <View
-                  style={styles.avatarRing}
-                />
-              </Animated.View>
-            </TouchableOpacity>
-
-            <Text style={styles.headerName}>
-              {PROFILE.name}
-            </Text>
-
-            <Text style={styles.headerTitle}>
-              {PROFILE.title}
-            </Text>
-
-            <Text style={styles.headerLocation}>
-              📍 {PROFILE.location}
-            </Text>
-
-            {/* DETAIL BUTTON */}
-
-            <TouchableOpacity
-              activeOpacity={0.8}
-              onPress={() =>
-                setModalVisible(true)
-              }
-              style={styles.detailButton}
-            >
-              <Text
-                style={styles.detailButtonText}
-              >
-                Lihat Detail
+              <Text style={styles.quickLabel}>
+                Fokus
               </Text>
-            </TouchableOpacity>
-          </LinearGradient>
-        </Animated.View>
 
-        {/* TENTANG SAYA */}
+              <Text style={styles.quickValue}>
+                Web Development
+              </Text>
+            </View>
 
-        <View style={styles.glassCard}>
-          <Text style={styles.sectionTitle}>
-            Tentang Saya
-          </Text>
 
-          <Text style={styles.bio}>
-            {PROFILE.bio}
-          </Text>
+            <View style={styles.quickCard}>
+              <Text style={styles.quickIcon}>📱</Text>
 
-          <View style={styles.divider} />
+              <Text style={styles.quickLabel}>
+                Platform
+              </Text>
 
-          <Text style={styles.smallTitle}>
-            Cita-cita
-          </Text>
+              <Text style={styles.quickValue}>
+                Mobile
+              </Text>
+            </View>
 
-          <Text style={styles.aspiration}>
-            {PROFILE.aspiration}
-          </Text>
+          </ScrollView>
 
-          <Text style={styles.smallTitle}>
-            Rencana Menggapai Cita-cita
-          </Text>
 
-          <Text style={styles.plan}>
-            {PROFILE.plan}
-          </Text>
-        </View>
+          {/* ========================================
+              CITA-CITA
+          ======================================== */}
 
-        {/* SKILLS */}
+          <View style={styles.glassCard}>
 
-        <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>
-            Skills
-          </Text>
+            <Text style={styles.sectionTitle}>
+              Cita-cita
+            </Text>
 
-          <FlatList
-            data={SKILLS}
-            horizontal
-            showsHorizontalScrollIndicator={
-              false
-            }
-            keyExtractor={(item) =>
-              item.id
-            }
-            renderItem={({
-              item,
-              index,
-            }) => (
-              <SkillCard
-                item={item}
-                index={index}
+            <Text style={styles.aspirationText}>
+              {PROFILE.aspiration}
+            </Text>
+
+            <Text style={styles.planText}>
+              {PROFILE.plan}
+            </Text>
+
+          </View>
+
+
+          {/* ========================================
+              PENGATURAN
+          ======================================== */}
+
+          <View style={styles.glassCard}>
+
+            <Text style={styles.sectionTitle}>
+              Pengaturan Tampilan
+            </Text>
+
+
+            <View style={styles.settingRow}>
+
+              <View>
+                <Text style={styles.settingTitle}>
+                  Tampilkan Kontak
+                </Text>
+
+                <Text style={styles.settingDescription}>
+                  Menampilkan informasi kontak
+                </Text>
+              </View>
+
+              <Switch
+                value={showContact}
+                onValueChange={setShowContact}
               />
-            )}
-            contentContainerStyle={
-              styles.skillList
-            }
-          />
+
+            </View>
+
+
+            <View style={styles.settingRow}>
+
+              <View>
+                <Text style={styles.settingTitle}>
+                  Mode Gelap
+                </Text>
+
+                <Text style={styles.settingDescription}>
+                  Mengubah tampilan kartu
+                </Text>
+              </View>
+
+              <Switch
+                value={darkMode}
+                onValueChange={setDarkMode}
+              />
+
+            </View>
+
+          </View>
+
         </View>
-      </>
+
+      </View>
     );
   };
 
-  /* =====================================================
-     FOOTER
-  ===================================================== */
+
+  // ====================================================
+  // SECTION HEADER
+  // ====================================================
+
+  const renderSectionHeader = ({ section }) => {
+
+    return (
+
+      <View style={styles.sectionHeader}>
+
+        <Text
+          style={[
+            styles.sectionHeaderText,
+            {
+              color: darkMode
+                ? "#FFFFFF"
+                : "#111827",
+            },
+          ]}
+        >
+          {section.title}
+        </Text>
+
+      </View>
+
+    );
+  };
+
+
+  // ====================================================
+  // RENDER ITEM
+  // ====================================================
+
+  const renderItem = ({ item, section }) => {
+
+    // SKILLS
+
+    if (section.type === "skills") {
+
+      return (
+
+        <View style={styles.skillsWrapper}>
+
+          <FlatList
+            data={SKILLS}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => (
+              <SkillCard item={item} />
+            )}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.skillList}
+          />
+
+        </View>
+
+      );
+
+    }
+
+
+    // HISTORY
+
+    return (
+
+      <View style={styles.historyWrapper}>
+
+        <TimelineCard item={item} />
+
+      </View>
+
+    );
+  };
+
+
+  // ====================================================
+  // FOOTER
+  // ====================================================
 
   const renderFooter = () => {
-    return (
-      <>
-        {/* KONTAK */}
 
-        <View style={styles.glassCard}>
-          <View style={styles.contactHeader}>
+    return (
+
+      <View style={styles.footerContainer}>
+
+
+        {/* ============================================
+            KONTAK
+        ============================================ */}
+
+        {showContact && (
+
+          <View style={styles.glassCard}>
+
             <Text style={styles.sectionTitle}>
               Kontak
             </Text>
 
-            <Switch
-              value={showContact}
-              onValueChange={
-                setShowContact
-              }
-              trackColor={{
-                false: "#CBD5E1",
-                true: "#A78BFA",
-              }}
-              thumbColor={
-                showContact
-                  ? "#6366F1"
-                  : "#F8FAFC"
-              }
-            />
+
+            <View style={styles.contactRow}>
+
+              <Text style={styles.contactIcon}>
+                📧
+              </Text>
+
+              <View>
+                <Text style={styles.contactLabel}>
+                  Email
+                </Text>
+
+                <Text style={styles.contactValue}>
+                  {PROFILE.email}
+                </Text>
+              </View>
+
+            </View>
+
+
+            <View style={styles.contactRow}>
+
+              <Text style={styles.contactIcon}>
+                📱
+              </Text>
+
+              <View>
+                <Text style={styles.contactLabel}>
+                  Telepon
+                </Text>
+
+                <Text style={styles.contactValue}>
+                  {PROFILE.phone}
+                </Text>
+              </View>
+
+            </View>
+
+
+            <View style={styles.contactRow}>
+
+              <Text style={styles.contactIcon}>
+                🎓
+              </Text>
+
+              <View>
+                <Text style={styles.contactLabel}>
+                  NIM
+                </Text>
+
+                <Text style={styles.contactValue}>
+                  {PROFILE.nim}
+                </Text>
+              </View>
+
+            </View>
+
           </View>
 
-          {showContact ? (
-            <View>
-              {/* EMAIL */}
+        )}
 
-              <View style={styles.contactItem}>
-                <Text
-                  style={styles.contactIcon}
-                >
-                  ✉️
-                </Text>
 
-                <View>
-                  <Text
-                    style={styles.contactLabel}
-                  >
-                    Email
-                  </Text>
+        {/* ============================================
+            PESAN
+        ============================================ */}
 
-                  <Text
-                    style={styles.contactValue}
-                  >
-                    {PROFILE.email}
-                  </Text>
-                </View>
-              </View>
+        <View style={styles.glassCard}>
 
-              {/* TELEPON */}
+          <Text style={styles.sectionTitle}>
+            Pesan Singkat
+          </Text>
 
-              <View style={styles.contactItem}>
-                <Text
-                  style={styles.contactIcon}
-                >
-                  📱
-                </Text>
+          <TextInput
+            value={message}
+            onChangeText={setMessage}
+            placeholder="Tulis pesan..."
+            placeholderTextColor="#9CA3AF"
+            multiline
+            style={styles.messageInput}
+          />
 
-                <View>
-                  <Text
-                    style={styles.contactLabel}
-                  >
-                    Telepon
-                  </Text>
+          <Button
+            title="Kirim Pesan"
+            onPress={sendMessage}
+          />
 
-                  <Text
-                    style={styles.contactValue}
-                  >
-                    {PROFILE.phone}
-                  </Text>
-                </View>
-              </View>
-
-              {/* NIM */}
-
-              <View style={styles.contactItem}>
-                <Text
-                  style={styles.contactIcon}
-                >
-                  🎓
-                </Text>
-
-                <View>
-                  <Text
-                    style={styles.contactLabel}
-                  >
-                    NIM
-                  </Text>
-
-                  <Text
-                    style={styles.contactValue}
-                  >
-                    {PROFILE.nim}
-                  </Text>
-                </View>
-              </View>
-            </View>
-          ) : (
-            <Text style={styles.hiddenText}>
-              Informasi kontak disembunyikan.
-            </Text>
-          )}
         </View>
 
-        {/* SHARE BUTTON */}
+
+        {/* ============================================
+            SHARE
+        ============================================ */}
 
         <Pressable
           onPress={shareCV}
           style={({ pressed }) => [
             styles.shareButton,
-
-            {
-              opacity: pressed
-                ? 0.75
-                : 1,
-
-              transform: [
-                {
-                  scale: pressed
-                    ? 0.96
-                    : 1,
-                },
-              ],
-            },
+            pressed && styles.buttonPressed,
           ]}
         >
-          <LinearGradient
-            colors={[
-              "#6366F1",
-              "#8B5CF6",
-            ]}
-            start={{
-              x: 0,
-              y: 0,
-            }}
-            end={{
-              x: 1,
-              y: 0,
-            }}
-            style={styles.shareGradient}
-          >
-            <Text style={styles.shareIcon}>
-              ↗
-            </Text>
 
-            <Text style={styles.shareText}>
-              Share CV
-            </Text>
-          </LinearGradient>
+          <Text style={styles.shareButtonText}>
+            📤  Share CV
+          </Text>
+
         </Pressable>
 
+
+        {/* ============================================
+            FOOTER
+        ============================================ */}
+
         <Text style={styles.footerText}>
-          Dibuat menggunakan React Native + Expo
+          © 2026 Irfan Mubarok
         </Text>
-      </>
+
+        <Text style={styles.footerSubText}>
+          React Native + Expo
+        </Text>
+
+      </View>
     );
   };
 
-  /* =====================================================
-     SECTION LIST
-  ===================================================== */
 
-  const sections = [
-    {
-      title: HISTORY[0].title,
-      data: HISTORY[0].data,
-    },
+  // ====================================================
+  // LOADING FONT
+  // ====================================================
 
-    {
-      title: HISTORY[1].title,
-      data: HISTORY[1].data,
-    },
-  ];
+  if (!fontsLoaded) {
 
-  /* =====================================================
-     RETURN
-  ===================================================== */
+    return (
 
-  return (
-    <SafeAreaProvider>
-      <View style={styles.root}>
-        <StatusBar
-          barStyle="light-content"
-          backgroundColor="#6366F1"
+      <View style={styles.loadingScreen}>
+
+        <ActivityIndicator
+          size="large"
         />
 
-        {/* =================================================
-            ANIMATED INTRO
-        ================================================= */}
+        <Text style={styles.loadingText}>
+          Memuat font...
+        </Text>
 
-        {showIntro && (
-          <Animated.View
-            style={[
-              styles.introScreen,
+      </View>
 
+    );
+  }
+
+
+  // ====================================================
+  // INTRO SCREEN
+  // ====================================================
+
+  if (loading) {
+
+    return (
+
+      <View style={styles.introScreen}>
+
+        <Animated.View
+          style={{
+            opacity: introOpacity,
+            transform: [
               {
-                opacity: introOpacity,
-
-                transform: [
-                  {
-                    scale: introScale,
-                  },
-                ],
+                scale: introScale,
               },
-            ]}
-          >
-            <LinearGradient
-              colors={[
-                "#4F46E5",
-                "#7C3AED",
-                "#A855F7",
-              ]}
-              style={styles.introGradient}
-            >
-              <Animated.View
-                style={[
-                  styles.introLogo,
-
-                  {
-                    transform: [
-                      {
-                        scale:
-                          introScale.interpolate(
-                            {
-                              inputRange: [
-                                1,
-                                1.1,
-                              ],
-
-                              outputRange: [
-                                1,
-                                1.15,
-                              ],
-                            }
-                          ),
-                      },
-                    ],
-                  },
-                ]}
-              >
-                <Text
-                  style={
-                    styles.introLogoText
-                  }
-                >
-                  IM
-                </Text>
-              </Animated.View>
-
-              <Text
-                style={styles.introTitle}
-              >
-                Irfan Mubarok
-              </Text>
-
-              <Text
-                style={
-                  styles.introSubtitle
-                }
-              >
-                Web Developer
-              </Text>
-
-              <ActivityIndicator
-                size="small"
-                color="#FFFFFF"
-                style={
-                  styles.introLoader
-                }
-              />
-            </LinearGradient>
-          </Animated.View>
-        )}
-
-        {/* =================================================
-            MAIN CV
-        ================================================= */}
-
-        <SafeAreaView
-          style={styles.safeArea}
-          edges={[
-            "top",
-            "left",
-            "right",
-          ]}
+            ],
+            alignItems: "center",
+          }}
         >
+
+          <View style={styles.introCircle}>
+
+            <Text style={styles.introIcon}>
+              💻
+            </Text>
+
+          </View>
+
+          <Text style={styles.introTitle}>
+            Irfan Mubarok
+          </Text>
+
+          <Text style={styles.introSubtitle}>
+            Personal CV
+          </Text>
+
+
+          <ActivityIndicator
+            size="large"
+            style={styles.introLoading}
+          />
+
+        </Animated.View>
+
+      </View>
+    );
+  }
+
+
+  // ====================================================
+  // MAIN APP
+  // ====================================================
+
+  return (
+
+    <SafeAreaProvider>
+
+      <SafeAreaView
+        style={[
+          styles.safeArea,
+          {
+            backgroundColor: darkMode
+              ? "#0F172A"
+              : "#F3F4F6",
+          },
+        ]}
+        edges={["top", "left", "right"]}
+      >
+
+        <StatusBar
+          barStyle={
+            darkMode
+              ? "light-content"
+              : "dark-content"
+          }
+          backgroundColor={
+            darkMode
+              ? "#0F172A"
+              : "#F3F4F6"
+          }
+        />
+
+
+        <LinearGradient
+          colors={
+            darkMode
+              ? ["#0F172A", "#111827"]
+              : ["#EEF2FF", "#F8FAFC"]
+          }
+          style={styles.background}
+        >
+
           <SectionList
+
             sections={sections}
-            keyExtractor={(item) =>
-              item.id
+
+            keyExtractor={(item, index) =>
+              `${item.title || "item"}-${index}`
             }
-            showsVerticalScrollIndicator={
-              false
+
+            renderItem={renderItem}
+
+            renderSectionHeader={
+              renderSectionHeader
             }
-            stickySectionHeadersEnabled={
-              false
-            }
+
             ListHeaderComponent={
               renderHeader
             }
-            renderSectionHeader={({
-              section,
-            }) => (
-              <View
-                style={
-                  styles.sectionHeader
-                }
-              >
-                <Text
-                  style={
-                    styles.sectionTitle
-                  }
-                >
-                  {section.title}
-                </Text>
-              </View>
-            )}
-            renderItem={({ item }) => (
-              <TimelineCard
-                item={item}
-              />
-            )}
+
             ListFooterComponent={
               renderFooter
             }
-            contentContainerStyle={
-              styles.container
-            }
-          />
-        </SafeAreaView>
 
-        {/* =================================================
-            MODAL DETAIL
-        ================================================= */}
+            showsVerticalScrollIndicator={false}
+
+            stickySectionHeadersEnabled={false}
+
+            contentContainerStyle={
+              styles.listContent
+            }
+
+          />
+
+        </LinearGradient>
+
+
+        {/* ============================================
+            MODAL DETAIL PROFILE
+        ============================================ */}
 
         <Modal
           visible={modalVisible}
@@ -956,18 +1100,11 @@ ${PROFILE.location}
             setModalVisible(false)
           }
         >
-          <Pressable
-            style={styles.modalOverlay}
-            onPress={() =>
-              setModalVisible(false)
-            }
-          >
-            <Pressable
-              style={styles.modalCard}
-              onPress={(event) =>
-                event.stopPropagation()
-              }
-            >
+
+          <View style={styles.modalBackground}>
+
+            <View style={styles.modalCard}>
+
               <Image
                 source={
                   isOnline
@@ -976,784 +1113,713 @@ ${PROFILE.location}
                       }
                     : PROFILE.avatarOffline
                 }
-                style={
-                  styles.modalAvatar
-                }
+                style={styles.modalAvatar}
               />
 
-              <Text
-                style={styles.modalName}
-              >
+
+              <Text style={styles.modalName}>
                 {PROFILE.name}
               </Text>
 
-              <Text
-                style={styles.modalTitle}
-              >
+              <Text style={styles.modalTitle}>
                 {PROFILE.title}
               </Text>
 
-              <View
-                style={
-                  styles.modalDivider
-                }
-              />
 
-              <Text
-                style={styles.modalInfo}
-              >
-                NIM: {PROFILE.nim}
-              </Text>
+              <View style={styles.modalInfo}>
 
-              <Text
-                style={styles.modalInfo}
-              >
-                Informatika
-              </Text>
+                <Text style={styles.modalInfoText}>
+                  NIM: {PROFILE.nim}
+                </Text>
 
-              <Text
-                style={styles.modalInfo}
-              >
-                UIN Siber Syekh Nurjati
-                Cirebon
-              </Text>
+                <Text style={styles.modalInfoText}>
+                  📍 {PROFILE.location}
+                </Text>
 
-              <TouchableOpacity
-                activeOpacity={0.8}
+                <Text style={styles.modalInfoText}>
+                  🎓 {PROFILE.school}
+                </Text>
+
+                <Text style={styles.modalInfoText}>
+                  💻 {PROFILE.aspiration}
+                </Text>
+
+              </View>
+
+
+              <Pressable
                 onPress={() =>
                   setModalVisible(false)
                 }
-                style={
-                  styles.closeButton
-                }
+                style={({ pressed }) => [
+                  styles.closeButton,
+                  pressed &&
+                    styles.buttonPressed,
+                ]}
               >
-                <Text
-                  style={
-                    styles.closeButtonText
-                  }
-                >
+
+                <Text style={styles.closeButtonText}>
                   Tutup
                 </Text>
-              </TouchableOpacity>
-            </Pressable>
-          </Pressable>
+
+              </Pressable>
+
+            </View>
+
+          </View>
+
         </Modal>
-      </View>
+
+      </SafeAreaView>
+
     </SafeAreaProvider>
   );
 }
 
-/* =========================================================
-   STYLE
-========================================================= */
+
+// ======================================================
+// STYLE
+// ======================================================
 
 const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    backgroundColor: "#F1F5F9",
-  },
+
+  // ====================================================
+  // GENERAL
+  // ====================================================
 
   safeArea: {
     flex: 1,
   },
 
-  container: {
-    paddingHorizontal: 16,
+  background: {
+    flex: 1,
+  },
+
+  listContent: {
     paddingBottom: 30,
   },
 
-  /* =====================================================
-     INTRO
-  ===================================================== */
+
+  // ====================================================
+  // INTRO
+  // ====================================================
 
   introScreen: {
-    ...StyleSheet.absoluteFillObject,
-    zIndex: 100,
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#4F46E5",
   },
 
-  introGradient: {
+  introCircle: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+
+  introIcon: {
+    fontSize: 45,
+  },
+
+  introTitle: {
+    fontFamily: "Poppins_700Bold",
+    fontSize: 25,
+    color: "#FFFFFF",
+  },
+
+  introSubtitle: {
+    fontFamily: "Poppins_400Regular",
+    fontSize: 14,
+    color: "#E0E7FF",
+    marginTop: 2,
+  },
+
+  introLoading: {
+    marginTop: 25,
+  },
+
+
+  // ====================================================
+  // LOADING
+  // ====================================================
+
+  loadingScreen: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
   },
 
-  introLogo: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
-
-    backgroundColor:
-      "rgba(255,255,255,0.18)",
-
-    justifyContent: "center",
-    alignItems: "center",
-
-    borderWidth: 1,
-    borderColor:
-      "rgba(255,255,255,0.35)",
-
-    marginBottom: 20,
-  },
-
-  introLogoText: {
-    color: "#FFFFFF",
-    fontFamily:
-      "Poppins_700Bold",
-    fontSize: 32,
-  },
-
-  introTitle: {
-    color: "#FFFFFF",
-    fontFamily:
-      "Poppins_700Bold",
-    fontSize: 27,
-  },
-
-  introSubtitle: {
-    color:
-      "rgba(255,255,255,0.85)",
-
-    fontFamily:
-      "Poppins_400Regular",
-
-    fontSize: 14,
-    marginTop: 3,
-  },
-
-  introLoader: {
-    marginTop: 25,
-  },
-
-  /* =====================================================
-     HEADER
-  ===================================================== */
-
-  headerWrapper: {
+  loadingText: {
     marginTop: 10,
-    marginBottom: 18,
-    borderRadius: 30,
-    overflow: "hidden",
+    fontFamily: "Poppins_400Regular",
   },
+
+
+  // ====================================================
+  // HEADER
+  // ====================================================
 
   header: {
     alignItems: "center",
-    paddingTop: 22,
-    paddingBottom: 28,
+    paddingTop: 25,
+    paddingBottom: 35,
     paddingHorizontal: 20,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
   },
 
-  statusBadge: {
-    alignSelf: "flex-end",
-
+  statusContainer: {
     flexDirection: "row",
     alignItems: "center",
-
-    backgroundColor:
-      "rgba(255,255,255,0.16)",
-
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-
-    borderRadius: 20,
-    marginBottom: 5,
+    alignSelf: "flex-end",
+    marginBottom: 15,
   },
 
   statusDot: {
-    width: 7,
-    height: 7,
+    width: 9,
+    height: 9,
     borderRadius: 5,
     marginRight: 6,
   },
 
   statusText: {
     color: "#FFFFFF",
-    fontFamily:
-      "Poppins_500Medium",
-    fontSize: 10,
+    fontFamily: "Poppins_500Medium",
+    fontSize: 12,
   },
 
-  avatarWrapper: {
-    width: 125,
-    height: 125,
+  avatarBorder: {
+    width: 130,
+    height: 130,
     borderRadius: 65,
-
+    padding: 4,
+    backgroundColor: "rgba(255,255,255,0.5)",
     justifyContent: "center",
     alignItems: "center",
-
-    marginTop: 5,
-    marginBottom: 15,
   },
 
   avatar: {
-    width: 108,
-    height: 108,
-    borderRadius: 55,
-    backgroundColor: "#E2E8F0",
-  },
-
-  avatarRing: {
-    position: "absolute",
-
     width: 122,
     height: 122,
-    borderRadius: 62,
-
-    borderWidth: 2,
-    borderColor:
-      "rgba(255,255,255,0.45)",
+    borderRadius: 61,
+    backgroundColor: "#FFFFFF",
   },
 
   headerName: {
+    fontFamily: "Poppins_700Bold",
+    fontSize: 27,
     color: "#FFFFFF",
-    fontFamily:
-      "Poppins_700Bold",
-    fontSize: 25,
+    marginTop: 15,
+    textAlign: "center",
   },
 
   headerTitle: {
-    color:
-      "rgba(255,255,255,0.9)",
-
-    fontFamily:
-      "Poppins_500Medium",
-
-    fontSize: 14,
+    fontFamily: "Poppins_500Medium",
+    fontSize: 15,
+    color: "#E0E7FF",
     marginTop: 2,
   },
 
   headerLocation: {
-    color:
-      "rgba(255,255,255,0.8)",
-
-    fontFamily:
-      "Poppins_400Regular",
-
-    fontSize: 11,
-    marginTop: 8,
+    fontFamily: "Poppins_400Regular",
+    fontSize: 12,
+    color: "#E0E7FF",
+    marginTop: 7,
   },
 
   detailButton: {
-    marginTop: 17,
-
-    paddingHorizontal: 20,
-    paddingVertical: 9,
-
-    backgroundColor:
-      "rgba(255,255,255,0.17)",
-
+    marginTop: 18,
+    paddingVertical: 10,
+    paddingHorizontal: 22,
     borderRadius: 20,
-
+    backgroundColor: "rgba(255,255,255,0.2)",
     borderWidth: 1,
-    borderColor:
-      "rgba(255,255,255,0.3)",
+    borderColor: "rgba(255,255,255,0.4)",
   },
 
   detailButtonText: {
     color: "#FFFFFF",
-
-    fontFamily:
-      "Poppins_500Medium",
-
+    fontFamily: "Poppins_500Medium",
     fontSize: 12,
   },
 
-  /* =====================================================
-     CARD
-  ===================================================== */
 
-  glassCard: {
-    backgroundColor:
-      "rgba(255,255,255,0.92)",
-
-    borderRadius: 24,
-
-    padding: 20,
-    marginBottom: 18,
-
-    borderWidth: 1,
-    borderColor:
-      "rgba(255,255,255,0.8)",
-
-    shadowColor: "#64748B",
-
-    shadowOffset: {
-      width: 0,
-      height: 8,
-    },
-
-    shadowOpacity: 0.12,
-    shadowRadius: 18,
-
-    elevation: 5,
-  },
+  // ====================================================
+  // SECTION
+  // ====================================================
 
   sectionContainer: {
-    marginBottom: 18,
+    paddingHorizontal: 16,
+    paddingTop: 16,
   },
 
   sectionHeader: {
-    marginTop: 5,
-    marginBottom: 12,
+    paddingHorizontal: 18,
+    paddingTop: 18,
+    paddingBottom: 8,
+  },
+
+  sectionHeaderText: {
+    fontFamily: "Poppins_700Bold",
+    fontSize: 20,
   },
 
   sectionTitle: {
-    color: "#1E293B",
-
-    fontFamily:
-      "Poppins_700Bold",
-
+    fontFamily: "Poppins_700Bold",
     fontSize: 18,
-  },
-
-  bio: {
-    color: "#64748B",
-
-    fontFamily:
-      "Poppins_400Regular",
-
-    fontSize: 12,
-    lineHeight: 21,
-
-    marginTop: 8,
-  },
-
-  divider: {
-    height: 1,
-    backgroundColor: "#E2E8F0",
-    marginVertical: 17,
-  },
-
-  smallTitle: {
-    color: "#475569",
-
-    fontFamily:
-      "Poppins_600SemiBold",
-
-    fontSize: 12,
-
-    marginTop: 8,
-    marginBottom: 4,
-  },
-
-  aspiration: {
-    color: "#6366F1",
-
-    fontFamily:
-      "Poppins_700Bold",
-
-    fontSize: 17,
+    color: "#111827",
     marginBottom: 10,
   },
 
-  plan: {
-    color: "#64748B",
 
-    fontFamily:
-      "Poppins_400Regular",
+  // ====================================================
+  // GLASS CARD
+  // ====================================================
 
-    fontSize: 11,
-    lineHeight: 19,
-  },
+  glassCard: {
+    backgroundColor: "rgba(255,255,255,0.88)",
+    borderRadius: 22,
+    padding: 18,
+    marginBottom: 15,
 
-  /* =====================================================
-     SKILL
-  ===================================================== */
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.9)",
 
-  skillList: {
-    paddingVertical: 5,
-    paddingRight: 10,
-  },
-
-  skillCard: {
-    width: 155,
-
-    backgroundColor: "#FFFFFF",
-
-    borderRadius: 20,
-
-    padding: 15,
-    marginRight: 12,
-
-    shadowColor: "#64748B",
-
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 5,
     },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
 
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
+    elevation: 4,
+  },
+
+  bioText: {
+    fontFamily: "Poppins_400Regular",
+    color: "#4B5563",
+    lineHeight: 22,
+    fontSize: 13,
+  },
+
+  aspirationText: {
+    fontFamily: "Poppins_600SemiBold",
+    fontSize: 16,
+    color: "#4F46E5",
+    marginBottom: 8,
+  },
+
+  planText: {
+    fontFamily: "Poppins_400Regular",
+    color: "#4B5563",
+    fontSize: 13,
+    lineHeight: 22,
+  },
+
+
+  // ====================================================
+  // QUICK CARD
+  // ====================================================
+
+  quickScroll: {
+    paddingBottom: 15,
+  },
+
+  quickCard: {
+    width: 145,
+    backgroundColor: "rgba(255,255,255,0.88)",
+    borderRadius: 18,
+    padding: 15,
+    marginRight: 10,
+
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.9)",
+
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+
+    elevation: 3,
+  },
+
+  quickIcon: {
+    fontSize: 25,
+    marginBottom: 8,
+  },
+
+  quickLabel: {
+    fontFamily: "Poppins_400Regular",
+    color: "#6B7280",
+    fontSize: 11,
+  },
+
+  quickValue: {
+    fontFamily: "Poppins_600SemiBold",
+    color: "#111827",
+    fontSize: 13,
+    marginTop: 2,
+  },
+
+
+  // ====================================================
+  // SETTINGS
+  // ====================================================
+
+  settingRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#E5E7EB",
+  },
+
+  settingTitle: {
+    fontFamily: "Poppins_600SemiBold",
+    color: "#111827",
+    fontSize: 13,
+  },
+
+  settingDescription: {
+    fontFamily: "Poppins_400Regular",
+    color: "#6B7280",
+    fontSize: 10,
+    marginTop: 2,
+  },
+
+
+  // ====================================================
+  // SKILL
+  // ====================================================
+
+  skillsWrapper: {
+    paddingLeft: 16,
+    paddingBottom: 10,
+  },
+
+  skillList: {
+    paddingRight: 16,
+  },
+
+  skillCard: {
+    width: 170,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 18,
+    padding: 15,
+    marginRight: 10,
+
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.07,
+    shadowRadius: 8,
 
     elevation: 3,
   },
 
   skillTop: {
     flexDirection: "row",
-
-    justifyContent:
-      "space-between",
-
-    alignItems: "center",
-
+    justifyContent: "space-between",
     marginBottom: 12,
   },
 
   skillName: {
-    color: "#334155",
-
-    fontFamily:
-      "Poppins_600SemiBold",
-
-    fontSize: 13,
+    fontFamily: "Poppins_600SemiBold",
+    color: "#111827",
   },
 
-  skillPercentage: {
-    color: "#6366F1",
-
-    fontFamily:
-      "Poppins_700Bold",
-
-    fontSize: 11,
+  skillPercent: {
+    fontFamily: "Poppins_600SemiBold",
+    color: "#4F46E5",
   },
 
   progressBackground: {
     width: "100%",
     height: 7,
-
-    borderRadius: 10,
-
-    backgroundColor: "#E2E8F0",
-
+    borderRadius: 5,
+    backgroundColor: "#E5E7EB",
     overflow: "hidden",
   },
 
   progressBar: {
-    height: "100%",
-
-    borderRadius: 10,
-
-    backgroundColor: "#6366F1",
+    height: 7,
+    borderRadius: 5,
+    backgroundColor: "#4F46E5",
   },
 
-  /* =====================================================
-     TIMELINE
-  ===================================================== */
+
+  // ====================================================
+  // HISTORY
+  // ====================================================
+
+  historyWrapper: {
+    paddingHorizontal: 16,
+  },
 
   timelineCard: {
     flexDirection: "row",
+    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
+    padding: 16,
+    marginBottom: 10,
 
-    marginBottom: 14,
-    paddingLeft: 4,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+
+    elevation: 3,
   },
 
-  timelineDot: {
-    width: 12,
-    height: 12,
-
-    borderRadius: 8,
-
-    backgroundColor: "#6366F1",
-
-    marginTop: 7,
+  timelineCircle: {
+    width: 45,
+    height: 45,
+    borderRadius: 23,
+    backgroundColor: "#EEF2FF",
+    justifyContent: "center",
+    alignItems: "center",
     marginRight: 12,
+  },
+
+  timelineCircleText: {
+    fontSize: 20,
   },
 
   timelineContent: {
     flex: 1,
+  },
 
-    backgroundColor: "#FFFFFF",
+  timelineYear: {
+    fontFamily: "Poppins_500Medium",
+    fontSize: 11,
+    color: "#4F46E5",
+    marginBottom: 3,
+  },
 
-    borderRadius: 20,
+  timelineTitle: {
+    fontFamily: "Poppins_700Bold",
+    fontSize: 14,
+    color: "#111827",
+  },
 
-    padding: 17,
+  timelineSubtitle: {
+    fontFamily: "Poppins_500Medium",
+    fontSize: 11,
+    color: "#4B5563",
+    marginTop: 3,
+  },
 
-    shadowColor: "#64748B",
+  timelineDescription: {
+    fontFamily: "Poppins_400Regular",
+    fontSize: 11,
+    color: "#6B7280",
+    lineHeight: 18,
+    marginTop: 6,
+  },
 
+
+  // ====================================================
+  // CONTACT
+  // ====================================================
+
+  footerContainer: {
+    paddingHorizontal: 16,
+    paddingTop: 10,
+  },
+
+  contactRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 9,
+  },
+
+  contactIcon: {
+    fontSize: 23,
+    width: 42,
+  },
+
+  contactLabel: {
+    fontFamily: "Poppins_400Regular",
+    color: "#6B7280",
+    fontSize: 10,
+  },
+
+  contactValue: {
+    fontFamily: "Poppins_500Medium",
+    color: "#111827",
+    fontSize: 12,
+    marginTop: 1,
+  },
+
+
+  // ====================================================
+  // MESSAGE
+  // ====================================================
+
+  messageInput: {
+    minHeight: 100,
+    borderWidth: 1,
+    borderColor: "#D1D5DB",
+    borderRadius: 15,
+    padding: 12,
+    textAlignVertical: "top",
+    fontFamily: "Poppins_400Regular",
+    fontSize: 12,
+    marginBottom: 12,
+    color: "#111827",
+  },
+
+
+  // ====================================================
+  // SHARE
+  // ====================================================
+
+  shareButton: {
+    backgroundColor: "#4F46E5",
+    borderRadius: 18,
+    paddingVertical: 15,
+    alignItems: "center",
+    justifyContent: "center",
+
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 4,
     },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
 
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
-
-    elevation: 2,
+    elevation: 4,
   },
 
-  timelineYear: {
-    color: "#6366F1",
-
-    fontFamily:
-      "Poppins_600SemiBold",
-
-    fontSize: 11,
-
-    marginBottom: 5,
-  },
-
-  timelineName: {
-    color: "#1E293B",
-
-    fontFamily:
-      "Poppins_700Bold",
-
+  shareButtonText: {
+    color: "#FFFFFF",
+    fontFamily: "Poppins_600SemiBold",
     fontSize: 14,
   },
 
-  timelinePosition: {
-    color: "#64748B",
-
-    fontFamily:
-      "Poppins_500Medium",
-
-    fontSize: 11,
-
-    marginTop: 2,
+  buttonPressed: {
+    opacity: 0.65,
+    transform: [
+      {
+        scale: 0.97,
+      },
+    ],
   },
 
-  timelineDescription: {
-    color: "#64748B",
 
-    fontFamily:
-      "Poppins_400Regular",
-
-    fontSize: 11,
-
-    lineHeight: 18,
-
-    marginTop: 9,
-  },
-
-  /* =====================================================
-     CONTACT
-  ===================================================== */
-
-  contactHeader: {
-    flexDirection: "row",
-
-    alignItems: "center",
-
-    justifyContent:
-      "space-between",
-  },
-
-  contactItem: {
-    flexDirection: "row",
-
-    alignItems: "center",
-
-    marginTop: 17,
-  },
-
-  contactIcon: {
-    fontSize: 20,
-    marginRight: 13,
-  },
-
-  contactLabel: {
-    color: "#94A3B8",
-
-    fontFamily:
-      "Poppins_400Regular",
-
-    fontSize: 9,
-  },
-
-  contactValue: {
-    color: "#334155",
-
-    fontFamily:
-      "Poppins_500Medium",
-
-    fontSize: 11,
-
-    marginTop: 1,
-  },
-
-  hiddenText: {
-    color: "#94A3B8",
-
-    fontFamily:
-      "Poppins_400Regular",
-
-    fontSize: 11,
-
-    marginTop: 10,
-  },
-
-  /* =====================================================
-     SHARE
-  ===================================================== */
-
-  shareButton: {
-    borderRadius: 18,
-    overflow: "hidden",
-    marginTop: 4,
-  },
-
-  shareGradient: {
-    height: 54,
-
-    flexDirection: "row",
-
-    justifyContent: "center",
-    alignItems: "center",
-  },
-
-  shareIcon: {
-    color: "#FFFFFF",
-
-    fontSize: 21,
-
-    fontFamily:
-      "Poppins_700Bold",
-
-    marginRight: 8,
-  },
-
-  shareText: {
-    color: "#FFFFFF",
-
-    fontFamily:
-      "Poppins_600SemiBold",
-
-    fontSize: 14,
-  },
+  // ====================================================
+  // FOOTER TEXT
+  // ====================================================
 
   footerText: {
     textAlign: "center",
-
-    color: "#94A3B8",
-
-    fontFamily:
-      "Poppins_400Regular",
-
-    fontSize: 9,
-
-    marginTop: 18,
+    fontFamily: "Poppins_500Medium",
+    color: "#6B7280",
+    fontSize: 11,
+    marginTop: 25,
   },
 
-  /* =====================================================
-     MODAL
-  ===================================================== */
+  footerSubText: {
+    textAlign: "center",
+    fontFamily: "Poppins_400Regular",
+    color: "#9CA3AF",
+    fontSize: 10,
+    marginTop: 3,
+    marginBottom: 20,
+  },
 
-  modalOverlay: {
+
+  // ====================================================
+  // MODAL
+  // ====================================================
+
+  modalBackground: {
     flex: 1,
-
-    backgroundColor:
-      "rgba(15,23,42,0.65)",
-
+    backgroundColor: "rgba(0,0,0,0.55)",
     justifyContent: "center",
     alignItems: "center",
-
     padding: 25,
   },
 
   modalCard: {
     width: "100%",
-    maxWidth: 380,
-
     backgroundColor: "#FFFFFF",
-
-    borderRadius: 28,
-
+    borderRadius: 25,
     padding: 25,
-
     alignItems: "center",
+
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 8,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 15,
+
+    elevation: 10,
   },
 
   modalAvatar: {
-    width: 110,
-    height: 110,
-
-    borderRadius: 55,
-
-    backgroundColor: "#E2E8F0",
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    marginBottom: 15,
   },
 
   modalName: {
-    color: "#1E293B",
-
-    fontFamily:
-      "Poppins_700Bold",
-
+    fontFamily: "Poppins_700Bold",
     fontSize: 21,
-
-    marginTop: 15,
+    color: "#111827",
   },
 
   modalTitle: {
-    color: "#6366F1",
-
-    fontFamily:
-      "Poppins_500Medium",
-
-    fontSize: 12,
-  },
-
-  modalDivider: {
-    width: "100%",
-    height: 1,
-
-    backgroundColor: "#E2E8F0",
-
-    marginVertical: 18,
+    fontFamily: "Poppins_400Regular",
+    fontSize: 13,
+    color: "#6B7280",
+    marginTop: 2,
   },
 
   modalInfo: {
-    color: "#64748B",
+    width: "100%",
+    marginTop: 20,
+    padding: 15,
+    backgroundColor: "#F3F4F6",
+    borderRadius: 15,
+  },
 
-    fontFamily:
-      "Poppins_400Regular",
-
-    fontSize: 11,
-
-    marginBottom: 5,
-
-    textAlign: "center",
+  modalInfoText: {
+    fontFamily: "Poppins_400Regular",
+    fontSize: 12,
+    color: "#374151",
+    marginBottom: 8,
   },
 
   closeButton: {
-    backgroundColor: "#6366F1",
-
-    paddingHorizontal: 30,
-    paddingVertical: 10,
-
+    marginTop: 20,
+    backgroundColor: "#4F46E5",
+    paddingVertical: 12,
+    paddingHorizontal: 35,
     borderRadius: 20,
-
-    marginTop: 17,
   },
 
   closeButtonText: {
     color: "#FFFFFF",
-
-    fontFamily:
-      "Poppins_600SemiBold",
-
-    fontSize: 12,
+    fontFamily: "Poppins_600SemiBold",
   },
 
-  /* =====================================================
-     LOADING
-  ===================================================== */
-
-  loadingScreen: {
-    flex: 1,
-
-    backgroundColor: "#F8FAFC",
-
-    justifyContent: "center",
-    alignItems: "center",
-  },
-
-  loadingText: {
-    color: "#64748B",
-
-    fontFamily:
-      "Poppins_400Regular",
-
-    fontSize: 12,
-
-    marginTop: 10,
-  },
 });
